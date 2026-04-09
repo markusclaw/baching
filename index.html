@@ -30,7 +30,12 @@
     }
     
     #cat-container {
-      perspective: 1000px;
+      position: relative;
+      width: 400px;
+      height: 400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     
     img {
@@ -38,47 +43,137 @@
       height: auto;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
-      transition: all 0.15s ease-out;
+      transition: opacity 0.1s ease-out;
     }
   </style>
 </head>
 <body>
   <h1>Baching</h1>
   <div id="cat-container">
-    <img id="cat" src="baching-neutral.png" alt="Baching">
+    <img id="cat" src="01-sit_center_master.png" alt="Baching">
   </div>
 
   <script>
     const cat = document.getElementById('cat');
-    const assets = {
-      'left-up': 'baching-left.png',     // Placeholder for now
-      'left': 'baching-left.png',
-      'neutral': 'baching-neutral.png',
-      'right-up': 'baching-right-up.png',
-      'right': 'baching.png'
+    
+    // Sprite library
+    const sprites = {
+      // Directions (11 poses)
+      'center': '01-sit_center_master.png',
+      'left-slight': '02-sit_look_left.png',
+      'left-far': '03-sit_far_left.png',
+      'right-slight': '04-sit_look_right.png',
+      'right-far': '05-sit_far_right.png',
+      'up': '06-sit_look_up.png',
+      'down': '07-sit_look_down.png',
+      'up-left': '08-sit_up_left.png',
+      'up-right': '09-sit_up_right.png',
+      'down-left': '10-sit_down_left.png',
+      'down-right': '11-sit_down_right.png',
+      
+      // Blinks
+      'blink-center': '12-sit_blink_center.png',
+      'blink-left': '13-sit_blink_left.png',
+      'blink-right': '14-sit_blink_right.png',
+      
+      // Tail wags
+      'tail-wag-a': '15-sit_tail_wag_a.png',
+      'tail-wag-b': '16-sit_tail_wag_b.png',
+      
+      // Extras
+      'far-up': '17-sit_far_up.png',
+      'lay-tail-wag': '18-lay_tail_wag_c.png',
+      'lay-blink': '19-lay_tail_blink.png'
     };
     
-    let currentAsset = 'neutral';
+    let currentPose = 'center';
+    let animationState = 'idle'; // idle, blinking, tail-wagging
+    let animationFrame = 0;
+    let lastAnimationTime = 0;
     
-    function setCatState(asset) {
-      if (currentAsset !== asset) {
-        cat.src = assets[asset];
-        currentAsset = asset;
+    // Random blink trigger (every 3-8 seconds)
+    function scheduleRandomBlink() {
+      const delay = 3000 + Math.random() * 5000;
+      setTimeout(() => {
+        if (animationState === 'idle') {
+          triggerBlink();
+        }
+        scheduleRandomBlink();
+      }, delay);
+    }
+    
+    // Random tail wag (every 2-6 seconds)
+    function scheduleRandomTailWag() {
+      const delay = 2000 + Math.random() * 4000;
+      setTimeout(() => {
+        if (animationState === 'idle') {
+          triggerTailWag();
+        }
+        scheduleRandomTailWag();
+      }, delay);
+    }
+    
+    function triggerBlink() {
+      animationState = 'blinking';
+      animationFrame = 0;
+      const blinks = [currentPose, 'blink-center', currentPose];
+      
+      // Map blinks based on direction
+      if (currentPose === 'left-slight' || currentPose === 'left-far') {
+        blinks[1] = 'blink-left';
+      } else if (currentPose === 'right-slight' || currentPose === 'right-far') {
+        blinks[1] = 'blink-right';
+      }
+      
+      const blinkSequence = [blinks[0], blinks[1], blinks[0]];
+      let frameIndex = 0;
+      
+      const blinkAnim = setInterval(() => {
+        cat.src = sprites[blinkSequence[frameIndex]];
+        frameIndex++;
+        if (frameIndex >= blinkSequence.length) {
+          clearInterval(blinkAnim);
+          animationState = 'idle';
+        }
+      }, 80);
+    }
+    
+    function triggerTailWag() {
+      animationState = 'tail-wagging';
+      const wagSequence = ['tail-wag-a', 'tail-wag-b', 'tail-wag-a'];
+      let frameIndex = 0;
+      
+      const wagAnim = setInterval(() => {
+        cat.src = sprites[wagSequence[frameIndex]];
+        frameIndex++;
+        if (frameIndex >= wagSequence.length * 2) {
+          clearInterval(wagAnim);
+          cat.src = sprites[currentPose];
+          animationState = 'idle';
+        }
+      }, 150);
+    }
+    
+    function setPose(pose) {
+      if (currentPose !== pose && animationState === 'idle') {
+        currentPose = pose;
+        cat.src = sprites[pose];
       }
     }
     
     document.addEventListener('mousemove', (e) => {
+      if (animationState !== 'idle') return; // Don't interrupt animations
+      
       const width = window.innerWidth;
       const height = window.innerHeight;
       const x = e.clientX;
       const y = e.clientY;
       
-      // 3x3 zones
       const thirdWidth = width / 3;
       const thirdHeight = height / 3;
       
-      let horizontalZone = 'center'; // left, center, right
-      let verticalZone = 'middle';    // up, middle, down
+      let horizontalZone = 'center';
+      let verticalZone = 'middle';
       
       if (x < thirdWidth) horizontalZone = 'left';
       else if (x > 2 * thirdWidth) horizontalZone = 'right';
@@ -86,33 +181,41 @@
       if (y < thirdHeight) verticalZone = 'up';
       else if (y > 2 * thirdHeight) verticalZone = 'down';
       
-      // Map zones to assets
+      // Map zones to poses with gradation
+      let pose = 'center';
+      
       if (verticalZone === 'up') {
         if (horizontalZone === 'right') {
-          setCatState('right-up');
+          pose = 'up-right';
         } else if (horizontalZone === 'left') {
-          setCatState('left-up'); // Will use left sprite for now
+          pose = 'up-left';
         } else {
-          setCatState('right-up'); // up, use right-up
+          pose = 'far-up';
         }
       } else if (verticalZone === 'middle') {
         if (horizontalZone === 'right') {
-          setCatState('right');
+          pose = 'right-far';
         } else if (horizontalZone === 'left') {
-          setCatState('left');
+          pose = 'left-far';
         } else {
-          setCatState('neutral');
+          pose = 'center';
         }
       } else if (verticalZone === 'down') {
         if (horizontalZone === 'right') {
-          setCatState('right'); // down-right, use right
+          pose = 'down-right';
         } else if (horizontalZone === 'left') {
-          setCatState('left'); // down-left
+          pose = 'down-left';
         } else {
-          setCatState('neutral'); // down, use neutral
+          pose = 'down';
         }
       }
+      
+      setPose(pose);
     });
+    
+    // Start animation timers
+    scheduleRandomBlink();
+    scheduleRandomTailWag();
   </script>
 </body>
 </html>
