@@ -88,8 +88,6 @@
     
     let currentPose = 'center';
     let animationState = 'idle'; // idle, blinking, tail-wagging
-    let animationFrame = 0;
-    let lastAnimationTime = 0;
     
     // Random blink trigger (every 3-8 seconds)
     function scheduleRandomBlink() {
@@ -115,17 +113,15 @@
     
     function triggerBlink() {
       animationState = 'blinking';
-      animationFrame = 0;
-      const blinks = [currentPose, 'blink-center', currentPose];
+      const blinkSequence = [currentPose, 'blink-center', currentPose];
       
       // Map blinks based on direction
       if (currentPose === 'left-slight' || currentPose === 'left-far') {
-        blinks[1] = 'blink-left';
+        blinkSequence[1] = 'blink-left';
       } else if (currentPose === 'right-slight' || currentPose === 'right-far') {
-        blinks[1] = 'blink-right';
+        blinkSequence[1] = 'blink-right';
       }
       
-      const blinkSequence = [blinks[0], blinks[1], blinks[0]];
       let frameIndex = 0;
       
       const blinkAnim = setInterval(() => {
@@ -142,14 +138,21 @@
       animationState = 'tail-wagging';
       const wagSequence = ['tail-wag-a', 'tail-wag-b', 'tail-wag-a'];
       let frameIndex = 0;
+      let loopCount = 0;
       
       const wagAnim = setInterval(() => {
         cat.src = sprites[wagSequence[frameIndex]];
         frameIndex++;
-        if (frameIndex >= wagSequence.length * 2) {
-          clearInterval(wagAnim);
-          cat.src = sprites[currentPose];
-          animationState = 'idle';
+        
+        if (frameIndex >= wagSequence.length) {
+          frameIndex = 0;
+          loopCount++;
+          
+          if (loopCount >= 2) {
+            clearInterval(wagAnim);
+            cat.src = sprites[currentPose];
+            animationState = 'idle';
+          }
         }
       }, 150);
     }
