@@ -185,6 +185,7 @@
       else if (y > 2 * thirdHeight) verticalZone = 'down';
       
       // Map zones to poses with gradation
+      // FLIPPED: pointer direction → cat looks toward pointer
       let pose = 'center';
       
       if (verticalZone === 'up') {
@@ -197,17 +198,17 @@
         }
       } else if (verticalZone === 'middle') {
         if (horizontalZone === 'right') {
-          pose = 'right-far';
+          pose = 'left-far'; // FLIPPED: pointer right → look left
         } else if (horizontalZone === 'left') {
-          pose = 'left-far';
+          pose = 'right-far'; // FLIPPED: pointer left → look right
         } else {
           pose = 'center';
         }
       } else if (verticalZone === 'down') {
         if (horizontalZone === 'right') {
-          pose = 'down-right';
+          pose = 'down-left'; // FLIPPED
         } else if (horizontalZone === 'left') {
-          pose = 'down-left';
+          pose = 'down-right'; // FLIPPED
         } else {
           pose = 'down';
         }
