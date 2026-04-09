@@ -38,7 +38,7 @@
       height: auto;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
-      transition: transform 0.15s ease-out, opacity 0.1s ease-out;
+      transition: transform 0.15s ease-out, filter 0.1s ease-out;
     }
     
     img.flipped {
@@ -54,26 +54,73 @@
 
   <script>
     const cat = document.getElementById('cat');
+    const assets = {
+      'right': 'baching.png',
+      'neutral': 'baching-neutral.png',
+      'right-up': 'baching-right-up.png'
+    };
+    
+    let currentAsset = 'neutral';
+    let isFlipped = false;
+    
+    function setCatState(asset, flipped = false) {
+      if (currentAsset !== asset || isFlipped !== flipped) {
+        cat.src = assets[asset];
+        currentAsset = asset;
+        isFlipped = flipped;
+        
+        if (flipped) {
+          cat.classList.add('flipped');
+        } else {
+          cat.classList.remove('flipped');
+        }
+      }
+    }
     
     document.addEventListener('mousemove', (e) => {
       const width = window.innerWidth;
-      const pointerX = e.clientX;
+      const height = window.innerHeight;
+      const x = e.clientX;
+      const y = e.clientY;
       
-      // Three zones: left (0-33%), center (33-66%), right (66-100%)
+      // 3x3 zones
       const thirdWidth = width / 3;
+      const thirdHeight = height / 3;
       
-      if (pointerX < thirdWidth) {
-        // Left zone: show flipped right-looking cat
-        cat.src = 'baching.png';
-        cat.classList.add('flipped');
-      } else if (pointerX < 2 * thirdWidth) {
-        // Center zone: show neutral looking straight
-        cat.src = 'baching-neutral.png';
-        cat.classList.remove('flipped');
-      } else {
-        // Right zone: show right-looking cat normally
-        cat.src = 'baching.png';
-        cat.classList.remove('flipped');
+      let horizontalZone = 'center'; // left, center, right
+      let verticalZone = 'middle';    // up, middle, down
+      
+      if (x < thirdWidth) horizontalZone = 'left';
+      else if (x > 2 * thirdWidth) horizontalZone = 'right';
+      
+      if (y < thirdHeight) verticalZone = 'up';
+      else if (y > 2 * thirdHeight) verticalZone = 'down';
+      
+      // Map zones to assets
+      if (verticalZone === 'up') {
+        if (horizontalZone === 'right') {
+          setCatState('right-up', false);
+        } else if (horizontalZone === 'left') {
+          setCatState('right-up', true); // flipped
+        } else {
+          setCatState('right-up', false); // up, use right-up
+        }
+      } else if (verticalZone === 'middle') {
+        if (horizontalZone === 'right') {
+          setCatState('right', false);
+        } else if (horizontalZone === 'left') {
+          setCatState('right', true); // flipped
+        } else {
+          setCatState('neutral', false);
+        }
+      } else if (verticalZone === 'down') {
+        if (horizontalZone === 'right') {
+          setCatState('right', false); // down-right, use right
+        } else if (horizontalZone === 'left') {
+          setCatState('right', true); // down-left, flipped
+        } else {
+          setCatState('neutral', false); // down, use neutral
+        }
       }
     });
   </script>
