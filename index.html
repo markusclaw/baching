@@ -38,11 +38,7 @@
       height: auto;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
-      transition: transform 0.15s ease-out, filter 0.1s ease-out;
-    }
-    
-    img.flipped {
-      transform: scaleX(-1);
+      transition: all 0.15s ease-out;
     }
   </style>
 </head>
@@ -55,25 +51,19 @@
   <script>
     const cat = document.getElementById('cat');
     const assets = {
-      'right': 'baching.png',
+      'left-up': 'baching-left.png',     // Placeholder for now
+      'left': 'baching-left.png',
       'neutral': 'baching-neutral.png',
-      'right-up': 'baching-right-up.png'
+      'right-up': 'baching-right-up.png',
+      'right': 'baching.png'
     };
     
     let currentAsset = 'neutral';
-    let isFlipped = false;
     
-    function setCatState(asset, flipped = false) {
-      if (currentAsset !== asset || isFlipped !== flipped) {
+    function setCatState(asset) {
+      if (currentAsset !== asset) {
         cat.src = assets[asset];
         currentAsset = asset;
-        isFlipped = flipped;
-        
-        if (flipped) {
-          cat.classList.add('flipped');
-        } else {
-          cat.classList.remove('flipped');
-        }
       }
     }
     
@@ -99,27 +89,27 @@
       // Map zones to assets
       if (verticalZone === 'up') {
         if (horizontalZone === 'right') {
-          setCatState('right-up', false);
+          setCatState('right-up');
         } else if (horizontalZone === 'left') {
-          setCatState('right-up', true); // flipped
+          setCatState('left-up'); // Will use left sprite for now
         } else {
-          setCatState('right-up', false); // up, use right-up
+          setCatState('right-up'); // up, use right-up
         }
       } else if (verticalZone === 'middle') {
         if (horizontalZone === 'right') {
-          setCatState('right', false);
+          setCatState('right');
         } else if (horizontalZone === 'left') {
-          setCatState('right', true); // flipped
+          setCatState('left');
         } else {
-          setCatState('neutral', false);
+          setCatState('neutral');
         }
       } else if (verticalZone === 'down') {
         if (horizontalZone === 'right') {
-          setCatState('right', false); // down-right, use right
+          setCatState('right'); // down-right, use right
         } else if (horizontalZone === 'left') {
-          setCatState('right', true); // down-left, flipped
+          setCatState('left'); // down-left
         } else {
-          setCatState('neutral', false); // down, use neutral
+          setCatState('neutral'); // down, use neutral
         }
       }
     });
