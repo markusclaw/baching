@@ -20,6 +20,7 @@
       align-items: center;
       min-height: 100vh;
       gap: 40px;
+      cursor: pointer;
     }
     
     h1 {
@@ -28,16 +29,44 @@
       letter-spacing: 2px;
     }
     
+    #cat-container {
+      perspective: 1000px;
+    }
+    
     img {
       max-width: 400px;
       height: auto;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
+      transition: transform 0.15s ease-out;
+    }
+    
+    img.looking-left {
+      transform: scaleX(-1);
     }
   </style>
 </head>
 <body>
   <h1>Baching</h1>
-  <img src="baching.png" alt="Baching">
+  <div id="cat-container">
+    <img id="cat" src="baching.png" alt="Baching">
+  </div>
+
+  <script>
+    const cat = document.getElementById('cat');
+    const container = document.querySelector('body');
+    
+    document.addEventListener('mousemove', (e) => {
+      const centerX = window.innerWidth / 2;
+      const pointerX = e.clientX;
+      
+      // If pointer is left of center, flip the cat
+      if (pointerX < centerX) {
+        cat.classList.add('looking-left');
+      } else {
+        cat.classList.remove('looking-left');
+      }
+    });
+  </script>
 </body>
 </html>
