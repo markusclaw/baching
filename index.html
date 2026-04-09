@@ -38,10 +38,10 @@
       height: auto;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
-      transition: transform 0.15s ease-out;
+      transition: transform 0.15s ease-out, opacity 0.1s ease-out;
     }
     
-    img.looking-left {
+    img.flipped {
       transform: scaleX(-1);
     }
   </style>
@@ -49,22 +49,31 @@
 <body>
   <h1>Baching</h1>
   <div id="cat-container">
-    <img id="cat" src="baching.png" alt="Baching">
+    <img id="cat" src="baching-neutral.png" alt="Baching">
   </div>
 
   <script>
     const cat = document.getElementById('cat');
-    const container = document.querySelector('body');
     
     document.addEventListener('mousemove', (e) => {
-      const centerX = window.innerWidth / 2;
+      const width = window.innerWidth;
       const pointerX = e.clientX;
       
-      // If pointer is left of center, flip the cat
-      if (pointerX < centerX) {
-        cat.classList.add('looking-left');
+      // Three zones: left (0-33%), center (33-66%), right (66-100%)
+      const thirdWidth = width / 3;
+      
+      if (pointerX < thirdWidth) {
+        // Left zone: show flipped right-looking cat
+        cat.src = 'baching.png';
+        cat.classList.add('flipped');
+      } else if (pointerX < 2 * thirdWidth) {
+        // Center zone: show neutral looking straight
+        cat.src = 'baching-neutral.png';
+        cat.classList.remove('flipped');
       } else {
-        cat.classList.remove('looking-left');
+        // Right zone: show right-looking cat normally
+        cat.src = 'baching.png';
+        cat.classList.remove('flipped');
       }
     });
   </script>
